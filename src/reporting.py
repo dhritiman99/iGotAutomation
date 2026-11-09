@@ -1,12 +1,35 @@
 import pandas as pd
 
 def generateReport(df: pd.DataFrame) -> pd.DataFrame:
-    index = df['DeptGroup'] if 'DeptGroup' in df.columns else df['Department']
+    index = "DeptGroup" if 'DeptGroup' in df.columns else "Department"
     pt = df.pivot_table(
-        index=index,
+        index=index,                 # Department Name
+        columns='Status',            # Pending / Completed
+        values='Employee_Id',        # Count Employee IDs
         aggfunc='count',
-        values='Employee_Id',
         margins=True,
-        margins_name='Total Count'
+        margins_name='Total Count',
+        fill_value=0
     )
     return pt
+
+def write_file(df: pd.DataFrame, pt: pd.DataFrame) -> None:
+    with pd.ExcelWriter(
+            file,
+            engine="openpyxl",
+            mode="a",
+            if_sheet_exists="replace"
+        ) as writer:
+
+
+            df.to_excel(
+                writer,
+                sheet_name="Master_Data",
+                index=False
+            )
+
+
+            pt.to_excel(
+                writer,
+                sheet_name="Report"
+            )

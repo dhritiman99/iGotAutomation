@@ -3,8 +3,11 @@ import os
 import json
 from src.data import getDataFrame, load_deptMapping
 from src.transform import mapDepartments
-from src.reporting import generateReport
+from src.reporting import generateReport, write_file
 import streamlit as st
+from datetime import datetime
+
+
 
 st.title('IGot Report')
 file = st.file_uploader(
@@ -14,24 +17,24 @@ file = st.file_uploader(
 )
 
 if file:
-    deptMapping = load_deptMapping()
-
-    df = getDataFrame(file)
-    df = mapDepartments(df, deptMapping)
-    #pt = generateReport(df)
-    with pd.ExcelWriter(
-        file, 
-        engine="openpyxl", 
-        mode="a", 
-        if_sheet_exists="replace"
-    ) as writer:
-
-        df.to_excel(writer, index=False)
-    
-    #pt
-
-    st.download_button(
-        label="Get Report",
-        data=file,
-        mime='text/xlsx'
-    )
+    try:
+        deptMapping = load_deptMapping()
+        if not deptMapping:
+            st.error("Department Column Does not exist..")
+            st.stop()
+        df = getDataFrame(file)
+        if df.empty:
+            st.error("Error Getting Data")
+            st.stop()
+        df = mapDepartments(df, deptMapping)
+        pt = generateReport(df)
+        write_file(df, pt)
+        now = datetime.now()
+        st.download_button(
+            label="Get Report",
+            data=file,
+            file_name= f'report_{now.strftime("%Y-%m-%d_%H:%M:%S")}.xlsx',
+            mime='text/xlsx'
+        )
+    except (ValueError, KeyError) as error:
+        st.error(str(error))
