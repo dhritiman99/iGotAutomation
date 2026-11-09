@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit as st
 
 def generateReport(df: pd.DataFrame) -> pd.DataFrame:
     index = "DeptGroup" if 'DeptGroup' in df.columns else "Department"
@@ -13,7 +14,7 @@ def generateReport(df: pd.DataFrame) -> pd.DataFrame:
     )
     return pt
 
-def write_file(df: pd.DataFrame, pt: pd.DataFrame) -> None:
+def write_file(file: st.file_uploader,df: pd.DataFrame, pt: pd.DataFrame) -> None:
     with pd.ExcelWriter(
             file,
             engine="openpyxl",
